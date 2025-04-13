@@ -18,7 +18,7 @@ type RecentPricesTableProps = {
   isLoading: boolean;
 };
 
-export default function RecentPricesTable({
+export default function F({
   data,
   isLoading,
 }: RecentPricesTableProps) {
@@ -34,14 +34,18 @@ export default function RecentPricesTable({
     );
   }
 
+  console.log('Raw Price Data:', data);
+
   // Ensure data is an array
   const priceData = Array.isArray(data)
     ? data
     : data &&
       typeof data === 'object' &&
-      'data' in data &&
-      Array.isArray(data.data)
-    ? data.data
+      ('id' in data ||
+        'product_name' in data ||
+        'price' in data ||
+        'date' in data)
+    ? [data] // Wrap single object in an array
     : [];
 
   if (priceData.length === 0) {

@@ -1,7 +1,6 @@
 import type { PriceData, DailySummaryData, MonthlySummaryData } from "@/types";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { calculateAllSummary } from "@/app/api/summary/all/routes";
 import { calculateDailySummary } from "@/lib/utils";
 import { calculateMonthlySummary } from "@/lib/utils";
 
@@ -15,39 +14,24 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Add a new product price with ACID principles
-export async function addProductPrice({
-  productName,
-  price,
-  date,
-}: {
+export async function addProductPrice(data: {
   productName: string;
   price: number;
   date: Date;
 }) {
-  try {
-    const response = await fetch("/api/prices", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        productName,
-        price,
-        date,
-      }),
-    });
+  const response = await fetch('/api/prices', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to add price data");
-    }
-
-    const { data } = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Transaction failed: Rolling back changes", error);
-    throw new Error("Transaction failed: Unable to add product price");
+  if (!response.ok) {
+    throw new Error('Failed to add price data');
   }
+
+  return await response.json();
 }
 
 // Get all prices with ACID principles
@@ -206,46 +190,57 @@ export async function POST(request: Request) {
   try {
     // Parse the JSON body from the request
     const body = await request.json();
-    const { productName, price, date } = body;
+    const items = Array.isArray(body) ? body : [body]; // Ensure the body is an array
 
-    console.log("POST Request Body:", body);
+    console.log("POST Request Body:", items);
 
-    // Validate the required fields
-    if (!productName || price === undefined || !date) {
-      return NextResponse.json(
-        { error: "Missing required fields: productName, price, date" },
-        { status: 400 }
-      );
+    // Validate each item in the array
+    for (const item of items) {
+      const { productName, price, date } = item;
+
+      if (!productName || price === undefined || !date) {
+        return NextResponse.json(
+          { error: "Missing required fields: productName, price, date" },
+          { status: 400 }
+        );
+      }
+
+      // Coerce price to a number and validate
+      const numericPrice = typeof price === "string" ? parseFloat(price) : price;
+      if (typeof numericPrice !== "number" || isNaN(numericPrice)) {
+        return NextResponse.json(
+          { error: "Price must be a valid number" },
+          { status: 400 }
+        );
+      }
+
+      // Replace the original price with the coerced numeric price
+      item.price = numericPrice;
     }
 
-    // Validate price is a number
-    if (typeof price !== 'number' || isNaN(price)) {
-      return NextResponse.json(
-        { error: "Price must be a valid number" },
-        { status: 400 }
-      );
-    }
+    // Map the items to the format required by the database
+    const formattedItems = items.map(({ productName, price, date }) => ({
+      product_name: productName,
+      price: price,
+      date: new Date(date).toISOString(),
+    }));
 
-    // Insert the new price record into the database
-    const { data: newPrice, error: insertError } = await supabase
+    // Insert the new price records into the database
+    const { data: newPrices, error: insertError } = await supabase
       .from("prices")
-      .insert({
-        product_name: productName,
-        price: price,
-        date: new Date(date).toISOString(),
-      })
+      .insert(formattedItems)
       .select();
 
     if (insertError) {
-      console.error("Error inserting price:", insertError);
+      console.error("Error inserting prices:", insertError);
       return NextResponse.json(
-        { error: `Failed to insert price: ${insertError.message}` },
+        { error: `Failed to insert prices: ${insertError.message}` },
         { status: 500 }
       );
     }
 
-    console.log("Successfully inserted price:", newPrice);
-    return NextResponse.json({ data: newPrice }, { status: 201 });
+    console.log("Successfully inserted prices:", newPrices);
+    return NextResponse.json({ data: newPrices }, { status: 201 });
 
   } catch (error) {
     console.error("POST API error:", error);

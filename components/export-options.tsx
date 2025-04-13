@@ -21,150 +21,130 @@ import {
   getAllPrices,
 } from '@/app/api/prices/route';
 
+// Update the `getExportData` function to handle empty data gracefully
+const getExportData = async (type: string) => {
+  let data;
+  let title;
+  let columns;
+
+  if (type === 'daily') {
+    data = await getDailyPriceSummary();
+    title = 'สรุปราคาสินค้ารายวัน';
+    columns = [
+      {
+        header: 'วันที่',
+        accessor: 'date',
+        format: (value: any): string =>
+          value ? format(new Date(value), 'PPP', { locale: th }) : 'N/A',
+      },
+      { header: 'จำนวนรายการ', accessor: 'count' },
+      {
+        header: 'ราคาเฉลี่ย (บาท)',
+        accessor: 'averagePrice',
+        format: (value: number): string =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+      {
+        header: 'ราคาต่ำสุด (บาท)',
+        accessor: 'minPrice',
+        format: (value: number): string =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+      {
+        header: 'ราคาสูงสุด (บาท)',
+        accessor: 'maxPrice',
+        format: (value: number): string =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+    ];
+  } else if (type === 'monthly') {
+    data = await getMonthlyPriceSummary();
+    title = 'สรุปราคาสินค้ารายเดือน';
+    columns = [
+      {
+        header: 'เดือน',
+        accessor: 'month',
+        format: (value: any) =>
+          value ? format(new Date(value), 'MMMM yyyy', { locale: th }) : 'N/A',
+      },
+      { header: 'จำนวนรายการ', accessor: 'count' },
+      {
+        header: 'ราคาเฉลี่ย (บาท)',
+        accessor: 'averagePrice',
+        format: (value: any) =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+      {
+        header: 'ราคาต่ำสุด (บาท)',
+        accessor: 'minPrice',
+        format: (value: any) =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+      {
+        header: 'ราคาสูงสุด (บาท)',
+        accessor: 'maxPrice',
+        format: (value: any) =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+    ];
+  } else {
+    data = await getAllPrices();
+    title = 'รายการราคาสินค้าทั้งหมด';
+    columns = [
+      { header: 'ชื่อสินค้า', accessor: 'productName' },
+      {
+        header: 'ราคา (บาท)',
+        accessor: 'price',
+        format: (value: any) =>
+          typeof value === 'number' ? value.toFixed(2) : '0.00',
+      },
+      { header: 'วันที่', accessor: 'date' },
+    ];
+  }
+
+  // Ensure data is always an array, even if empty
+  data = Array.isArray(data) ? data : [];
+
+  return { data, title, columns };
+};
+
+// Add debugging logs to trace the issue
+const handleExportPdf = async (type: string) => {
+  try {
+    console.log('Setting isExporting to:', type);
+    const { data, title, columns } = await getExportData(type);
+    await exportToPdf({ data, title, columns });
+    toast.success('ส่งออกไฟล์ PDF สำเร็จ');
+  } catch (error) {
+    console.error(`Error exporting ${type} to PDF:`, error);
+    toast.error('เกิดข้อผิดพลาดในการส่งออกไฟล์ PDF');
+  } finally {
+    console.log('Resetting isExporting to null');
+  }
+};
+
+const handleExportSheets = async (type: string) => {
+  try {
+    console.log('Setting isExporting to:', type + '-sheets');
+    const { data, title } = await getExportData(type);
+    const sheetName =
+      type === 'daily'
+        ? 'DailySummary'
+        : type === 'monthly'
+        ? 'MonthlySummary'
+        : 'AllPrices';
+    await exportToGoogleSheets({ data, title, sheetName });
+    toast.success('ส่งออกไปยัง Google Sheets สำเร็จ');
+  } catch (error) {
+    console.error(`Error exporting ${type} to Google Sheets:`, error);
+    toast.error('เกิดข้อผิดพลาดในการส่งออกไปยัง Google Sheets');
+  } finally {
+    console.log('Resetting isExporting to null');
+  }
+};
+
 export default function ExportOptions() {
-  const [isExporting, setIsExporting] = useState<string | null>(null);
-
-  const handleExportPdf = async (type: string) => {
-    try {
-      setIsExporting(type);
-
-      let data;
-      let title;
-      let columns;
-
-      if (type === 'daily') {
-        data = await getDailyPriceSummary();
-        if (!data || data.length === 0) {
-          throw new Error('No daily data available for export');
-        }
-        title = 'สรุปราคาสินค้ารายวัน';
-        interface Column {
-          header: string;
-          accessor: string;
-          format?: (value: any) => string;
-        }
-
-        columns = [
-          {
-            header: 'วันที่',
-            accessor: 'date',
-            format: (value: any): string =>
-              value ? format(new Date(value), 'PPP', { locale: th }) : 'N/A',
-          },
-          { header: 'จำนวนรายการ', accessor: 'count' },
-          {
-            header: 'ราคาเฉลี่ย (บาท)',
-            accessor: 'averagePrice',
-            format: (value: number): string =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-          {
-            header: 'ราคาต่ำสุด (บาท)',
-            accessor: 'minPrice',
-            format: (value: number): string =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-          {
-            header: 'ราคาสูงสุด (บาท)',
-            accessor: 'maxPrice',
-            format: (value: number): string =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-        ] as Column[];
-      } else if (type === 'monthly') {
-        data = await getMonthlyPriceSummary();
-        if (!data || data.length === 0) {
-          throw new Error('No monthly data available for export');
-        }
-        title = 'สรุปราคาสินค้ารายเดือน';
-        columns = [
-          {
-            header: 'เดือน',
-            accessor: 'month',
-            format: (value: any) =>
-              value
-                ? format(new Date(value), 'MMMM yyyy', { locale: th })
-                : 'N/A',
-          },
-          { header: 'จำนวนรายการ', accessor: 'count' },
-          {
-            header: 'ราคาเฉลี่ย (บาท)',
-            accessor: 'averagePrice',
-            format: (value: any) =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-          {
-            header: 'ราคาต่ำสุด (บาท)',
-            accessor: 'minPrice',
-            format: (value: any) =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-          {
-            header: 'ราคาสูงสุด (บาท)',
-            accessor: 'maxPrice',
-            format: (value: any) =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-        ];
-      } else {
-        data = await getAllPrices();
-        if (!data || data.length === 0) {
-          throw new Error('No data available for export');
-        }
-        title = 'รายการราคาสินค้าทั้งหมด';
-        columns = [
-          { header: 'ชื่อสินค้า', accessor: 'productName' },
-          {
-            header: 'ราคา (บาท)',
-            accessor: 'price',
-            format: (value: any) =>
-              typeof value === 'number' ? value.toFixed(2) : '0.00',
-          },
-          { header: 'วันที่', accessor: 'date' },
-        ];
-      }
-
-      await exportToPdf({ data, title, columns });
-      toast.success('ส่งออกไฟล์ PDF สำเร็จ');
-    } catch (error) {
-      console.error(`Error exporting ${type} to PDF:`, error);
-      toast.error('เกิดข้อผิดพลาดในการส่งออกไฟล์ PDF');
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const handleExportSheets = async (type: string) => {
-    try {
-      setIsExporting(type + '-sheets');
-
-      let data;
-      let title;
-      let sheetName;
-
-      if (type === 'daily') {
-        data = await getDailyPriceSummary();
-        title = 'สรุปราคาสินค้ารายวัน';
-        sheetName = 'DailySummary';
-      } else if (type === 'monthly') {
-        data = await getMonthlyPriceSummary();
-        title = 'สรุปราคาสินค้ารายเดือน';
-        sheetName = 'MonthlySummary';
-      } else {
-        data = await getAllPrices();
-        title = 'รายการราคาสินค้าทั้งหมด';
-        sheetName = 'AllPrices';
-      }
-
-      await exportToGoogleSheets({ data, title, sheetName });
-      toast.success('ส่งออกไปยัง Google Sheets สำเร็จ');
-    } catch (error) {
-      console.error(`Error exporting ${type} to Google Sheets:`, error);
-      toast.error('เกิดข้อผิดพลาดในการส่งออกไปยัง Google Sheets');
-    } finally {
-      setIsExporting(null);
-    }
-  };
+  const [isExporting] = useState<string | null>(null);
 
   return (
     <div className="grid gap-6 md:grid-cols-3">

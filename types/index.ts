@@ -50,3 +50,13 @@ export type SheetsExportOptions = {
   title: string
   sheetName: string
 }
+
+export interface ChecklistItem {
+  id: number;
+  product_name: string;
+  price: number;
+  date: string;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+}

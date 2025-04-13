@@ -1,20 +1,28 @@
 'use client';
 
-import { format, parse } from 'date-fns';
-import { th } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
 import type { AllSummaryData } from '@/types';
+import { Line } from 'react-chartjs-2';
 import {
-  Chart,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartTooltipItem,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from '@/components/ui/chart';
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type PriceChartProps = {
   data: AllSummaryData[] | any[];
@@ -40,6 +48,8 @@ export default function PriceChart({ data }: PriceChartProps) {
       Number(item?.averagePrice || 0) * Number(item?.count || 0),
   }));
 
+  console.log('Processed Data:', processedData);
+
   const filteredData = processedData
     .filter((item) => item.date || item.month)
     .sort((a, b) => {
@@ -47,6 +57,8 @@ export default function PriceChart({ data }: PriceChartProps) {
       const keyB = b.date || b.month;
       return keyA.localeCompare(keyB);
     });
+
+  console.log('Filtered Data:', filteredData);
 
   if (filteredData.length === 0) {
     return (
@@ -64,94 +76,60 @@ export default function PriceChart({ data }: PriceChartProps) {
     );
   }
 
-  const xAxisKey = filteredData[0].date ? 'date' : 'month';
-
-  const formatDate = (value: string) => {
-    if (!value) return 'ไม่ระบุ';
-    try {
-      if (value.length === 10) {
-        return format(new Date(value), 'd MMM', { locale: th });
-      } else if (value.length === 7) {
-        const date = parse(value, 'yyyy-MM', new Date());
-        return format(date, 'MMM yyyy', { locale: th });
-      }
-      return value;
-    } catch (e) {
-      console.error('Date formatting error:', e, 'Value:', value);
-      return value;
-    }
+  const chartData = {
+    labels: filteredData.map((item) => item.date || item.month),
+    datasets: [
+      {
+        label: 'ยอดขายรวม',
+        data: filteredData.map((item) => item.totalSales),
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+        borderWidth: 2,
+      },
+      {
+        label: 'ราคาเฉลี่ย',
+        data: filteredData.map((item) => item.averagePrice),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        borderWidth: 2,
+      },
+    ],
   };
 
-  const formatCurrency = (value: number) => value.toLocaleString();
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            const value = context.raw;
+            return `${value.toLocaleString()} บาท`;
+          },
+        },
+      },
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'วันที่',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'มูลค่า (บาท)',
+        },
+      },
+    },
+  };
 
   return (
-    <div className="w-full h-[400px] border rounded-md p-2">
-      <ChartContainer>
-        <Chart>
-          <LineChart data={filteredData}>
-            <XAxis dataKey={xAxisKey} tickFormatter={formatDate} />
-            <YAxis tickFormatter={formatCurrency} />
-            <Line
-              dataKey="totalSales"
-              stroke="#2563eb"
-              strokeWidth={2}
-              name="ยอดขายรวม"
-            />
-            <Line
-              dataKey="averagePrice"
-              stroke="#10b981"
-              strokeWidth={2}
-              name="ราคาเฉลี่ย"
-            />
-            <ChartTooltip>
-              {({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0].payload;
-
-                  let formattedDate = 'ไม่ระบุ';
-                  try {
-                    if (data.date) {
-                      formattedDate = format(
-                        new Date(data.date),
-                        'd MMMM yyyy',
-                        { locale: th }
-                      );
-                    } else if (data.month) {
-                      const date = parse(data.month, 'yyyy-MM', new Date());
-                      formattedDate = format(date, 'MMMM yyyy', { locale: th });
-                    }
-                  } catch (e) {
-                    console.error('Date formatting error:', e);
-                  }
-
-                  return (
-                    <ChartTooltipContent>
-                      <div className="font-medium">{formattedDate}</div>
-                      <ChartTooltipItem
-                        name="ยอดขายรวม"
-                        value={`${(data.totalSales || 0).toLocaleString()} บาท`}
-                        color="#2563eb"
-                      />
-                      <ChartTooltipItem
-                        name="จำนวนรายการ"
-                        value={(data.count || 0).toLocaleString()}
-                      />
-                      <ChartTooltipItem
-                        name="ราคาเฉลี่ย"
-                        value={`${(
-                          data.averagePrice || 0
-                        ).toLocaleString()} บาท`}
-                        color="#10b981"
-                      />
-                    </ChartTooltipContent>
-                  );
-                }
-                return null;
-              }}
-            </ChartTooltip>
-          </LineChart>
-        </Chart>
-      </ChartContainer>
+    <div className="w-full h-full border rounded-md p-2">
+      <Line data={chartData} options={options} />
     </div>
   );
 }

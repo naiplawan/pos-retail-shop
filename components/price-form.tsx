@@ -191,6 +191,36 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
     0
   );
 
+  const handleSaveAllCartItems = async () => {
+    if (cartItems.length === 0) {
+      toast.error('ไม่มีสินค้าในตะกร้า');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      console.log('Cart items being sent:', cartItems); // Debugging log
+      const results = await Promise.all(
+        cartItems.map((item) =>
+          addProductPrice({
+            productName: item.productName,
+            price: item.price,
+            date: new Date(), // Assuming current date for all items
+          })
+        )
+      );
+
+      setCartItems([]);
+      toast.success('บันทึกสินค้าทั้งหมดเรียบร้อยแล้ว');
+      onDataChange();
+    } catch (error) {
+      console.error('Error saving all cart items:', error);
+      toast.error('เกิดข้อผิดพลาดในการบันทึกสินค้าทั้งหมด');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4">
       {/* Cart panel - visible on all screen sizes */}
@@ -229,10 +259,17 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
 
         {cartItems.length > 0 && (
           <div className="pt-3 border-t">
-            <div className="flex justify-between font-semibold">
+            <div className="flex justify-between font-semibold mb-4">
               <span>รวมทั้งหมด</span>
               <span>{cartTotal.toFixed(2)} บาท</span>
             </div>
+            <Button
+              className="w-full"
+              onClick={handleSaveAllCartItems}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกสินค้าทั้งหมด'}
+            </Button>
           </div>
         )}
       </div>

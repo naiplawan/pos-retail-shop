@@ -13,7 +13,7 @@ import {
   getMonthlyPriceSummary,
   getRecentPrices,
 } from '@/app/api/prices/route';
-import { getallSummaryData } from '@/app/api/summary/all/routes';
+import { getallSummaryData } from '@/app/api/summary/all/route';
 import type {
   PriceData,
   DailySummaryData,
@@ -23,6 +23,7 @@ import type {
 import PriceChart from '@/components/price-chart';
 import RecentPricesTable from '@/components/recent-prices-table';
 import { toast } from 'sonner';
+import { set } from 'date-fns';
 
 export default function Dashboard() {
   const [recentPrices, setRecentPrices] = useState<PriceData[]>([]);
@@ -75,9 +76,19 @@ export default function Dashboard() {
           ? (monthlyData as { data: MonthlySummaryData[] }).data
           : [];
 
+        const normalizedSummaryData = Array.isArray(summaryData)
+          ? summaryData
+          : summaryData &&
+            typeof summaryData === 'object' &&
+            'data' in (summaryData as { data?: unknown }) &&
+            Array.isArray((summaryData as { data?: unknown }).data)
+          ? (summaryData as { data: AllSummaryData[] }).data
+          : [];
+
         setRecentPrices(normalizedRecentData);
         setDailySummary(normalizedDailyData);
         setMonthlySummary(normalizedMonthlyData);
+        setSummaryData(normalizedSummaryData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
         toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลแดชบอร์ด');
@@ -91,14 +102,16 @@ export default function Dashboard() {
 
   return (
     <div className="grid gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>จำนวนรายการทั้งหมด</CardTitle>
             <CardDescription>จำนวนรายการราคาที่บันทึกไว้</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{recentPrices.length}</div>
+            <div className="text-3xl font-bold text-center">
+              {recentPrices.length}
+            </div>
           </CardContent>
         </Card>
 
@@ -108,7 +121,7 @@ export default function Dashboard() {
             <CardDescription>ราคาเฉลี่ยของสินค้าทั้งหมดวันนี้</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-center">
               {dailySummary.length > 0
                 ? `${dailySummary[0].averagePrice.toFixed(2)} บาท`
                 : 'ไม่มีข้อมูล'}
@@ -124,7 +137,7 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-center">
               {monthlySummary.length > 0
                 ? `${monthlySummary[0].averagePrice.toFixed(2)} บาท`
                 : 'ไม่มีข้อมูล'}
@@ -150,7 +163,7 @@ export default function Dashboard() {
             กราฟแสดงราคาสินค้าตลอดระยะเวลาที่บันทึก
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-[400px] sm:h-[500px] lg:h-[600px]">
           {isLoading ? (
             <div className="text-center py-6">
               <p className="text-muted-foreground">กำลังโหลดข้อมูล...</p>

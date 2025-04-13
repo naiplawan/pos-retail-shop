@@ -26,19 +26,6 @@ export default function Home() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (formData.productName && formData.price && formData.date) {
-      setIsModalOpen(true);
-    } else {
-      toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
-    }
-  };
-
   const handleConfirm = () => {
     toast.success('บันทึกข้อมูลสำเร็จ!');
     setFormData({ productName: '', price: '', date: '' });
