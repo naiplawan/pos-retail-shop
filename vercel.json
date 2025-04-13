@@ -1,5 +1,0 @@
-{
-  "build": {
-    "buildCommand": "bun install && bun build"
-  }
-}
