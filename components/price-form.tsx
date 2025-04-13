@@ -200,12 +200,13 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
     try {
       setIsSubmitting(true);
       console.log('Cart items being sent:', cartItems); // Debugging log
+      const selectedDate = form.getValues('date');
       const results = await Promise.all(
         cartItems.map((item) =>
           addProductPrice({
             productName: item.productName,
             price: item.price,
-            date: new Date(), // Assuming current date for all items
+            date: selectedDate, // Use the selected date from the form
           })
         )
       );
