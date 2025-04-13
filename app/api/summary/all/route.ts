@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import type { AllSummaryData } from "@/types";
+import type { AllSummaryData, PriceData } from "@/types";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
@@ -21,7 +21,7 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
     console.error("calculateAllSummary expected an array but received:", pricesData);
     // If pricesData is an object with a data property that's an array, use that instead
     if (pricesData && typeof pricesData === 'object' && 'data' in (pricesData as { data?: any[] }) && Array.isArray((pricesData as { data?: any[] }).data)) {
-      pricesData = (pricesData as { data: any[] }).data;
+      pricesData = (pricesData as { data: PriceData[] }).data;
     } else {
       return [];
     }

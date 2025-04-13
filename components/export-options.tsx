@@ -34,7 +34,7 @@ const getExportData = async (type: string) => {
       {
         header: 'วันที่',
         accessor: 'date',
-        format: (value: any): string =>
+        format: (value: string | number | Date): string =>
           value ? format(new Date(value), 'PPP', { locale: th }) : 'N/A',
       },
       { header: 'จำนวนรายการ', accessor: 'count' },

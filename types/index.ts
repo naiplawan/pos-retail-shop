@@ -60,3 +60,10 @@ export interface ChecklistItem {
   created_at: string;
   updated_at: string;
 }
+
+export interface ChecklistSheet {
+  id: number;
+  checklist_sheet_no: string;
+  created_at: string;
+  updated_at: string;
+}

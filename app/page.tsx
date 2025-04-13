@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import PriceForm from '@/components/price-form';
+import { useMediaQuery } from '@/hooks/use-mobile';
 
 export default function Home() {
   const [refreshData, setRefreshData] = useState(0);
@@ -25,6 +26,7 @@ export default function Home() {
     date: '',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleConfirm = () => {
     toast.success('บันทึกข้อมูลสำเร็จ!');
@@ -35,17 +37,44 @@ export default function Home() {
   return (
     <>
       <main className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          ระบบจัดการร้านค้า
-        </h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">แดชบอร์ด</h1>
 
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8">
-            <TabsTrigger value="dashboard">แดชบอร์ด</TabsTrigger>
-            <TabsTrigger value="add-price">เพิ่มรายการสินค้า</TabsTrigger>
-            <TabsTrigger value="daily">สรุปยอดรายวัน</TabsTrigger>
-            <TabsTrigger value="monthly">สรุปยอดรายเดือน</TabsTrigger>
-            <TabsTrigger value="export">ส่งออกข้อมูล</TabsTrigger>
+          <TabsList
+            className={`flex flex-wrap mb-4 sm:mb-8 ${
+              isMobile ? 'overflow-x-auto' : ''
+            }`}
+          >
+            <TabsTrigger
+              className="text-xs sm:text-sm py-1.5 flex-1"
+              value="dashboard"
+            >
+              แดชบอร์ด
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-xs sm:text-sm py-1.5 flex-1"
+              value="add-price"
+            >
+              เพิ่มสินค้า
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-xs sm:text-sm py-1.5 flex-1"
+              value="daily"
+            >
+              รายวัน
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-xs sm:text-sm py-1.5 flex-1"
+              value="monthly"
+            >
+              รายเดือน
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-xs sm:text-sm py-1.5 flex-1"
+              value="export"
+            >
+              ส่งออก
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">

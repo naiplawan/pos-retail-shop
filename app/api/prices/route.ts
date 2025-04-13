@@ -68,7 +68,7 @@ export async function getRecentPrices(limit = 10): Promise<PriceData[]> {
     const data = Array.isArray(result.data) ? result.data : [];
 
     // Filter out invalid items and format properly
-    const validData = data.map((item: { id: any; product_name: any; price: string; date: any; }) => ({
+    const validData = data.map((item: { id: number; product_name: string; price: string; date: number; }) => ({
       id: item.id || "",
       product_name: item.product_name || "",
       price: typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0,
