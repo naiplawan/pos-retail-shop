@@ -1,8 +1,6 @@
-# Price Tracker
+# POS-RETAIL-SHOP
 
 A comprehensive retail price tracking solution with both web and desktop interfaces, built with Next.js and Electron.
-
-![Price Tracker Dashboard](public/placeholder.svg)
 
 ## Features
 
