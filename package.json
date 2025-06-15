@@ -64,6 +64,7 @@
     "path": "latest",
     "prisma": "^6.6.0",
     "react": "^19",
+    "react-barcode-reader": "^0.0.2",
     "react-chartjs-2": "^5.3.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
