@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { getDailyPriceSummary } from '@/app/api/prices/route';
+// Remove direct import of server-side function
 import type { DailySummaryData } from '@/types';
 import {
   Table,
@@ -27,8 +27,12 @@ export default function DailySummary() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const summaryData = await getDailyPriceSummary();
-        setData(summaryData);
+        const response = await fetch('/api/prices?type=daily');
+        if (!response.ok) {
+          throw new Error('Failed to fetch daily summary');
+        }
+        const result = await response.json();
+        setData(result.data);
       } catch (error) {
         console.error('Error fetching daily summary:', error);
         toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลสรุปรายวัน');

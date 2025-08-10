@@ -118,18 +118,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   
   // Validate query parameters
-  const validateSearch = createApiValidator(searchSchema);
   const validatePagination = createApiValidator(paginationSchema);
   
-  const searchResult = validateSearch({ query: searchParams.get("product") });
   const paginationResult = validatePagination({ 
     page: parseInt(searchParams.get("page") || "1"), 
     limit: parseInt(searchParams.get("limit") || "10") 
   });
-  
-  if (!searchResult.success) {
-    return NextResponse.json({ error: "Invalid search parameters", details: searchResult.error }, { status: 400 });
-  }
   
   if (!paginationResult.success) {
     return NextResponse.json({ error: "Invalid pagination parameters", details: paginationResult.error }, { status: 400 });

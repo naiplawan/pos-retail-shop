@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { addProductPrice, getAllPrices } from '@/app/api/prices/route';
+// Remove direct import of server-side functions
 import BarcodeInput from '@/components/barcode-input';
 
 // Define a type for the items to display in the modal

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { getMonthlyPriceSummary } from '@/app/api/prices/route';
+// Remove direct import of server-side function
 import type { MonthlySummaryData } from '@/types';
 import {
   Table,
@@ -27,11 +27,15 @@ export default function MonthlySummary() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const summaryData = await getMonthlyPriceSummary();
-        if (!summaryData || !Array.isArray(summaryData)) {
+        const response = await fetch('/api/prices?type=monthly');
+        if (!response.ok) {
+          throw new Error('Failed to fetch monthly summary');
+        }
+        const result = await response.json();
+        if (!result.data || !Array.isArray(result.data)) {
           throw new Error('Invalid data format received from API');
         }
-        setData(summaryData);
+        setData(result.data);
       } catch (error) {
         console.error('Error fetching monthly summary:', error);
         toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูลสรุปรายเดือน');

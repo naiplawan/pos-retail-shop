@@ -11,19 +11,26 @@ import { logger } from "@/lib/logger";
 export async function calculateAllSummary(pricesData: any[]): Promise<AllSummaryData[]> {
   // Ensure pricesData is an array
   if (!Array.isArray(pricesData)) {
-    logger.error("calculateAllSummary expected an array but received:", pricesData);
+    logger.error("calculateAllSummary expected an array but received:", typeof pricesData, JSON.stringify(pricesData, null, 2));
     // If pricesData is an object with a data property that's an array, use that instead
     if (pricesData && typeof pricesData === 'object' && 'data' in (pricesData as { data?: any[] }) && Array.isArray((pricesData as { data?: any[] }).data)) {
       pricesData = (pricesData as { data: PriceData[] }).data;
+      logger.debug("Extracted data array from object, length:", pricesData.length);
     } else {
+      logger.error("No valid array found in pricesData");
       return [];
     }
   }
 
+  logger.debug("Processing array of length:", pricesData.length, "First item:", pricesData[0]);
+
   // Group prices by product name and month
   const summaryByProductAndMonth: Record<string, AllSummaryData> = {};
 
+  let processedCount = 0;
   pricesData.forEach(item => {
+    processedCount++;
+    
     // Skip items without date
     if (!item.date) {
       logger.warn("Item without date found:", item);
@@ -77,10 +84,16 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
     // Update total sales
     summary.totalSales += price;
     summary.averagePrice = totalPrice / summary.count;
+    
+    if (processedCount % 20 === 0) {
+      logger.debug(`Processed ${processedCount}/${pricesData.length} items`);
+    }
   });
 
+  logger.debug(`Finished processing all ${processedCount} items. Summary keys: ${Object.keys(summaryByProductAndMonth).length}`);
+
   // Convert to array and ensure min/max price values are valid
-  return Object.values(summaryByProductAndMonth)
+  const summaryArray = Object.values(summaryByProductAndMonth)
     .map(summary => ({
       ...summary,
       minPrice: summary.minPrice === Number.MAX_SAFE_INTEGER ? summary.price : summary.minPrice,
@@ -91,6 +104,9 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
       const monthComparison = b.month.localeCompare(a.month);
       return monthComparison !== 0 ? monthComparison : a.productName.localeCompare(b.productName);
     });
+
+  logger.debug(`Summary array length: ${summaryArray.length}, First item:`, summaryArray[0]);
+  return summaryArray;
 }
 
 export async function getallSummaryData(
@@ -149,15 +165,35 @@ export async function GET(request: Request) {
     }
 
     // Execute the query
-    const { data: pricesData, error: fetchError } = await query;
+    logger.debug("Executing query...");
+    const result = await query;
+    logger.debug("Query result:", JSON.stringify(result, null, 2));
+    
+    const { data: pricesData, error: fetchError } = result;
 
     if (fetchError) throw new Error(`Error fetching prices: ${fetchError.message}`);
-    if (!pricesData || pricesData.length === 0) {
+    if (!pricesData) {
+      logger.warn("No data returned from query");
+      return NextResponse.json({ data: [] });
+    }
+
+    // Log data for debugging
+    logger.debug("Raw prices data:", JSON.stringify(pricesData, null, 2));
+    
+    if (!Array.isArray(pricesData)) {
+      logger.error("Prices data is not an array:", typeof pricesData);
+      return NextResponse.json({ data: [] });
+    }
+
+    if (pricesData.length === 0) {
+      logger.info("Empty prices data array");
       return NextResponse.json({ data: [] });
     }
 
     // Calculate all summary data
-    const summaryData = calculateAllSummary(pricesData);
+    const summaryData = await calculateAllSummary(pricesData);
+    
+    logger.debug(`Summary data type: ${typeof summaryData}, isArray: ${Array.isArray(summaryData)}, length: ${summaryData?.length}`);
 
     return NextResponse.json({ data: summaryData });
   } catch (error) {
