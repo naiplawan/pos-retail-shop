@@ -1,14 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import type { AllSummaryData, PriceData } from "@/types";
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Supabase URL or Key is not defined in environment variables.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabaseServer } from "@/lib/supabase-server";
+import { logger } from "@/lib/logger";
 
 /**
  * Calculate all summary data from price records
@@ -18,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export async function calculateAllSummary(pricesData: any[]): Promise<AllSummaryData[]> {
   // Ensure pricesData is an array
   if (!Array.isArray(pricesData)) {
-    console.error("calculateAllSummary expected an array but received:", pricesData);
+    logger.error("calculateAllSummary expected an array but received:", pricesData);
     // If pricesData is an object with a data property that's an array, use that instead
     if (pricesData && typeof pricesData === 'object' && 'data' in (pricesData as { data?: any[] }) && Array.isArray((pricesData as { data?: any[] }).data)) {
       pricesData = (pricesData as { data: PriceData[] }).data;
@@ -33,7 +26,7 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
   pricesData.forEach(item => {
     // Skip items without date
     if (!item.date) {
-      console.warn("Item without date found:", item);
+      logger.warn("Item without date found:", item);
       return;
     }
 
@@ -43,7 +36,7 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
     const date = item.date;
 
     if (!productName || typeof price !== 'number') {
-      console.warn("Invalid item found, missing product name or price:", item);
+      logger.warn("Invalid item found, missing product name or price:", item);
       return;
     }
 
@@ -105,7 +98,7 @@ export async function getallSummaryData(
   month: string | null
 ): Promise<AllSummaryData[]> {
   try {
-    let query = supabase
+    let query = supabaseServer
       .from("prices")
       .select("id, product_name, price, date")
       .order("date", { ascending: false });
@@ -121,13 +114,13 @@ export async function getallSummaryData(
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching prices:", error);
+      logger.error("Error fetching prices:", error);
       throw error;
     }
 
     return calculateAllSummary(data);
   } catch (error) {
-    console.error("Error in getallSummaryData:", error);
+    logger.error("Error in getallSummaryData:", error);
     throw error;
   }
 }
@@ -141,7 +134,7 @@ export async function GET(request: Request) {
 
   try {
     // Build the query with optional filters
-    let query = supabase
+    let query = supabaseServer
       .from("prices")
       .select("id, product_name, price, date")
       .order("date", { ascending: false });
@@ -168,7 +161,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: summaryData });
   } catch (error) {
-    console.error("API error:", error);
+    logger.error("API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to fetch summary data";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

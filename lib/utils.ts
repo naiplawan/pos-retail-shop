@@ -1,127 +1,129 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { PriceData, DailySummary, MonthlySummary } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Types for price data
-export interface PriceData {
-  id: string | number;
-  product_name: string;
-  price: number;
-  date: string;
-}
-
-// Interface for daily summary
-export interface DailySummary {
-  date: string;
-  total: number;
-  count: number;
-  averagePrice: number;
-  minPrice: number;
-  maxPrice: number;
-}
-
-// Interface for monthly summary
-export interface MonthlySummary {
-  month: string;
-  total: number;
-  count: number;
-  averagePrice: number;
-  minPrice: number;
-  maxPrice: number;
-}
-
 /**
- * Calculate daily summaries from price data
+ * Calculate daily summaries from price data - Optimized O(n) version
  * @param pricesData Array of price data
  * @returns Array of daily summaries sorted by date (newest first)
  */
 export function calculateDailySummary(pricesData: PriceData[]): DailySummary[] {
-  // Group prices by date and calculate daily totals, min and max prices
-  const dailySummary = pricesData.reduce((acc: Record<string, {
+  if (!pricesData.length) return [];
+
+  // Use Map for better performance with string keys
+  const summaryMap = new Map<string, {
     date: string;
     total: number;
     count: number;
     minPrice: number;
     maxPrice: number;
-  }>, item) => {
-    const date = item.date;
-    if (!acc[date]) {
-      acc[date] = {
-        date,
-        total: 0,
-        count: 0,
-        minPrice: Number.MAX_SAFE_INTEGER,
-        maxPrice: Number.MIN_SAFE_INTEGER
-      };
-    }
-    acc[date].total += item.price;
-    acc[date].count += 1;
-    // Update min and max prices
-    acc[date].minPrice = Math.min(acc[date].minPrice, item.price);
-    acc[date].maxPrice = Math.max(acc[date].maxPrice, item.price);
-    return acc;
-  }, {});
+  }>();
 
-  // Convert to array and sort by date (newest first)
-  return Object.values(dailySummary)
-    .map(item => ({
-      date: item.date,
-      total: item.total,
-      count: item.count,
-      // Calculate average price as total price divided by total number of products
-      averagePrice: item.count > 0 ? item.total / item.count : 0,
-      minPrice: item.minPrice === Number.MAX_SAFE_INTEGER ? 0 : item.minPrice,
-      maxPrice: item.maxPrice === Number.MIN_SAFE_INTEGER ? 0 : item.maxPrice
-    }))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  // Single pass through data
+  for (const item of pricesData) {
+    const date = item.date;
+    const price = Number(item.price); // Ensure numeric
+    
+    if (isNaN(price)) continue; // Skip invalid prices
+    
+    const existing = summaryMap.get(date);
+    
+    if (existing) {
+      existing.total += price;
+      existing.count += 1;
+      existing.minPrice = Math.min(existing.minPrice, price);
+      existing.maxPrice = Math.max(existing.maxPrice, price);
+    } else {
+      summaryMap.set(date, {
+        date,
+        total: price,
+        count: 1,
+        minPrice: price,
+        maxPrice: price
+      });
+    }
+  }
+
+  // Convert to array and calculate averages in one pass
+  const results: DailySummary[] = [];
+  
+  for (const summary of summaryMap.values()) {
+    results.push({
+      date: summary.date,
+      total: summary.total,
+      count: summary.count,
+      averagePrice: summary.total / summary.count,
+      minPrice: summary.minPrice,
+      maxPrice: summary.maxPrice
+    });
+  }
+
+  // Sort by date (newest first) - more efficient string comparison
+  return results.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 /**
- * Calculate monthly summaries from price data
+ * Calculate monthly summaries from price data - Optimized O(n) version
  * @param pricesData Array of price data
  * @returns Array of monthly summaries sorted by month (newest first)
  */
 export function calculateMonthlySummary(pricesData: PriceData[]): MonthlySummary[] {
-  // Group prices by month and calculate monthly totals, min and max prices
-  const monthlySummary = pricesData.reduce((acc: Record<string, {
+  if (!pricesData.length) return [];
+
+  // Use Map for better performance
+  const summaryMap = new Map<string, {
     month: string;
     total: number;
     count: number;
     minPrice: number;
     maxPrice: number;
-  }>, item) => {
-    const month = item.date.slice(0, 7); // Extract YYYY-MM
-    if (!acc[month]) {
-      acc[month] = {
-        month,
-        total: 0,
-        count: 0,
-        minPrice: Number.MAX_SAFE_INTEGER,
-        maxPrice: Number.MIN_SAFE_INTEGER
-      };
-    }
-    acc[month].total += item.price;
-    acc[month].count += 1;
-    // Update min and max prices
-    acc[month].minPrice = Math.min(acc[month].minPrice, item.price);
-    acc[month].maxPrice = Math.max(acc[month].maxPrice, item.price);
-    return acc;
-  }, {});
+  }>();
 
-  // Convert to array and sort by month (newest first)
-  return Object.values(monthlySummary)
-    .map(item => ({
-      month: item.month,
-      total: item.total,
-      count: item.count,
-      averagePrice: item.count > 0 ? item.total / item.count : 0,
-      minPrice: item.minPrice === Number.MAX_SAFE_INTEGER ? 0 : item.minPrice,
-      maxPrice: item.maxPrice === Number.MIN_SAFE_INTEGER ? 0 : item.maxPrice
-    }))
-    .sort((a, b) => b.month.localeCompare(a.month));
+  // Single pass through data
+  for (const item of pricesData) {
+    const month = item.date.slice(0, 7); // Extract YYYY-MM
+    const price = Number(item.price); // Ensure numeric
+    
+    if (isNaN(price)) continue; // Skip invalid prices
+    
+    const existing = summaryMap.get(month);
+    
+    if (existing) {
+      existing.total += price;
+      existing.count += 1;
+      existing.minPrice = Math.min(existing.minPrice, price);
+      existing.maxPrice = Math.max(existing.maxPrice, price);
+    } else {
+      summaryMap.set(month, {
+        month,
+        total: price,
+        count: 1,
+        minPrice: price,
+        maxPrice: price
+      });
+    }
+  }
+
+  // Convert to array and calculate averages in one pass
+  const results: MonthlySummary[] = [];
+  
+  for (const summary of summaryMap.values()) {
+    results.push({
+      month: summary.month,
+      total: summary.total,
+      count: summary.count,
+      averagePrice: summary.total / summary.count,
+      minPrice: summary.minPrice,
+      maxPrice: summary.maxPrice
+    });
+  }
+
+  // Sort by month (newest first)
+  return results.sort((a, b) => b.month.localeCompare(a.month));
 }
 
 /**
@@ -139,4 +141,126 @@ export function formatPriceData(pricesData: PriceData[], limit: number) {
       price: item.price,
       date: item.date,
     }));
+}
+
+/**
+ * Format price for display with Thai Baht currency
+ * @param price Price number
+ * @returns Formatted price string
+ */
+export function formatPrice(price: number): string {
+  return typeof price === 'number' && !isNaN(price) 
+    ? `${price.toFixed(2)} บาท` 
+    : '0.00 บาท';
+}
+
+/**
+ * Format date for display in Thai format
+ * @param dateString Date string
+ * @returns Formatted date string
+ */
+export function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    
+    return date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+/**
+ * Debounce function for search inputs
+ * @param func Function to debounce
+ * @param wait Wait time in milliseconds
+ * @returns Debounced function
+ */
+export function debounce<T extends (...args: unknown[]) => unknown>(
+  func: T, 
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
+/**
+ * Throttle function for performance-sensitive operations
+ * @param func Function to throttle
+ * @param limit Time limit in milliseconds
+ * @returns Throttled function
+ */
+export function throttle<T extends (...args: unknown[]) => unknown>(
+  func: T, 
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean;
+  
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+/**
+ * Safe JSON parse with fallback
+ * @param jsonString JSON string to parse
+ * @param fallback Fallback value if parsing fails
+ * @returns Parsed object or fallback
+ */
+export function safeJsonParse<T>(jsonString: string, fallback: T): T {
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Create a cache with TTL (Time To Live)
+ * @param ttl Time to live in milliseconds
+ * @returns Cache object with get, set, and clear methods
+ */
+export function createTTLCache<T>(ttl: number = 5 * 60 * 1000) {
+  const cache = new Map<string, { value: T; expires: number }>();
+
+  return {
+    get(key: string): T | null {
+      const item = cache.get(key);
+      if (!item) return null;
+      
+      if (Date.now() > item.expires) {
+        cache.delete(key);
+        return null;
+      }
+      
+      return item.value;
+    },
+    
+    set(key: string, value: T): void {
+      cache.set(key, {
+        value,
+        expires: Date.now() + ttl
+      });
+    },
+    
+    clear(): void {
+      cache.clear();
+    },
+    
+    size(): number {
+      return cache.size;
+    }
+  };
 }

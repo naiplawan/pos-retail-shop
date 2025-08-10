@@ -1,9 +1,9 @@
-"use client"
+'use client';
 
-import { format } from "date-fns";
+import { format } from 'date-fns';
 import { pdf } from '@react-pdf/renderer';
-import { createPdfDocument } from "@/lib/pdf-document";
-import type { ExportOptions, SheetsExportOptions } from "@/types";
+import { createPdfDocument } from '@/lib/pdf-document';
+import type { ExportOptions, SheetsExportOptions } from '@/types';
 
 // Updated exportToPdf to use react-pdf
 export async function exportToPdf({ data, title, columns }: ExportOptions): Promise<void> {
@@ -23,7 +23,7 @@ export async function exportToPdf({ data, title, columns }: ExportOptions): Prom
       title,
       data,
       columns,
-      dateInfo: `Exported on: ${currentDate} ${currentTime}`
+      dateInfo: `Exported on: ${currentDate} ${currentTime}`,
     });
 
     // Generate PDF blob
@@ -37,53 +37,48 @@ export async function exportToPdf({ data, title, columns }: ExportOptions): Prom
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
   } catch (error) {
-    console.error("Error generating PDF:", error);
-    throw new Error("Failed to generate PDF");
+    console.error('Error generating PDF:', error);
+    throw new Error('Failed to generate PDF');
   }
 }
 
 // Export data to Google Sheets
-export async function exportToGoogleSheets({ data, title, sheetName }: SheetsExportOptions) {
+export async function exportToGoogleSheets({ data, sheetName }: SheetsExportOptions) {
   try {
     // Check if data is empty
     if (!data || data.length === 0) {
-      throw new Error("No data available for export")
+      throw new Error('No data available for export');
     }
 
     // Prepare CSV content
-    const headers = Object.keys(data[0])
+    const headers = Object.keys(data[0]);
     const csvContent = [
-      headers.join(","), // Add headers
+      headers.join(','), // Add headers
       ...data.map((row) =>
         headers
           .map((header) => {
-            const value = row[header]
+            const value = row[header];
             // Handle values that might contain commas or are undefined/null
-            return value == null
-              ? "N/A"
-              : typeof value === "string" && value.includes(",")
-              ? `"${value}"`
-              : value
+            return value == null ? 'N/A' : typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
           })
-          .join(",")
+          .join(',')
       ),
-    ].join("\n")
+    ].join('\n');
 
     // Create a blob and download it
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.setAttribute("href", url)
-    link.setAttribute("download", `${sheetName}_${format(new Date(), "yyyyMMdd")}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${sheetName}_${format(new Date(), 'yyyyMMdd')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-    return true
+    return true;
   } catch (error) {
-    console.error("Error exporting to Google Sheets:", error)
-    throw new Error("Failed to export to Google Sheets")
+    console.error('Error exporting to Google Sheets:', error);
+    throw new Error('Failed to export to Google Sheets');
   }
 }

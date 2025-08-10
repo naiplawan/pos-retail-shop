@@ -3,23 +3,33 @@
 import { createClient } from "@supabase/supabase-js"
 import type { PriceData, DailySummaryData, MonthlySummaryData } from "@/types"
 
-// Function to get Supabase client
+// Function to get Supabase client with secure credential handling
 async function getSupabaseClient() {
   let supabaseUrl = ""
   let supabaseKey = ""
 
-  // Try to get from window.electronAPI if available (Electron environment)
-  if (typeof window !== "undefined" && window.electronAPI) {
-    supabaseUrl = await window.electronAPI.getEnv("SUPABASE_URL")
-    supabaseKey = await window.electronAPI.getEnv("SUPABASE_ANON_KEY")
-  } else {
-    // Fallback to hardcoded values (for development or if electronAPI is not available)
-    supabaseUrl = "https://gotbldxyecgshpavgkzn.supabase.co"
-    supabaseKey =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvdGJsZHh5ZWNnc2hwYXZna3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MjAyNzAsImV4cCI6MjA1OTk5NjI3MH0.mvIuoNHU3WobqoLTfOiv2R9SbsVKm3QyXTEa3Z0uqpg"
+  // Use Next.js public environment variables (safe for client-side)
+  supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+  supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Supabase credentials not found. Please check your environment variables.")
   }
 
-  return createClient(supabaseUrl, supabaseKey)
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    db: {
+      schema: 'public'
+    },
+    global: {
+      headers: {
+        'x-client-info': 'pos-retail-shop@1.0.0'
+      }
+    }
+  })
 }
 
 // Add a new product price

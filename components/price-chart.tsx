@@ -25,7 +25,7 @@ ChartJS.register(
 );
 
 type PriceChartProps = {
-  data: AllSummaryData[] | any[];
+  data: AllSummaryData[] | null | undefined;
 };
 
 export default function PriceChart({ data }: PriceChartProps) {
@@ -36,7 +36,7 @@ export default function PriceChart({ data }: PriceChartProps) {
   }, []);
 
   const safeData = Array.isArray(data) ? data : [];
-  console.log('Raw Chart Data:', safeData);
+  // Remove console.log for production
 
   const processedData = safeData.map((item) => ({
     date: item?.date || '',
@@ -48,7 +48,6 @@ export default function PriceChart({ data }: PriceChartProps) {
       Number(item?.averagePrice || 0) * Number(item?.count || 0),
   }));
 
-  console.log('Processed Data:', processedData);
 
   const filteredData = processedData
     .filter((item) => item.date || item.month)
@@ -58,7 +57,6 @@ export default function PriceChart({ data }: PriceChartProps) {
       return keyA.localeCompare(keyB);
     });
 
-  console.log('Filtered Data:', filteredData);
 
   if (filteredData.length === 0) {
     return (
@@ -104,7 +102,7 @@ export default function PriceChart({ data }: PriceChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: (context: any) => {
+          label: (context: { raw: number }) => {
             const value = context.raw;
             return `${value.toLocaleString()} บาท`;
           },

@@ -1,17 +1,9 @@
 import type { PriceData, DailySummaryData, MonthlySummaryData } from "@/types";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { calculateDailySummary } from "@/lib/utils";
-import { calculateMonthlySummary } from "@/lib/utils";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Supabase URL or Key is not defined in environment variables.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { supabaseServer } from "@/lib/supabase-server";
+import { calculateDailySummary, calculateMonthlySummary } from "@/lib/utils";
+import { priceSchema, searchSchema, paginationSchema, createApiValidator } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 
 // Add a new product price with ACID principles
 export async function addProductPrice(data: {
@@ -47,7 +39,7 @@ export async function getAllPrices(): Promise<PriceData[]> {
     const { data } = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching all prices", error);
+    logger.error("Error fetching all prices", error);
     throw new Error("Unable to fetch all prices");
   }
 }
@@ -77,7 +69,7 @@ export async function getRecentPrices(limit = 10): Promise<PriceData[]> {
 
     return validData;
   } catch (error) {
-    console.error("Error fetching recent prices", error);
+    logger.error("Error fetching recent prices", error);
     // Return an empty array instead of throwing
     return [];
   }
@@ -96,10 +88,10 @@ export async function getDailyPriceSummary(): Promise<DailySummaryData[]> {
     }
 
     const { data } = await response.json();
-    console.log("Daily Price Summary:", data);
+    logger.debug("Daily Price Summary:", data);
     return data;
   } catch (error) {
-    console.error("Error fetching daily price summary", error);
+    logger.error("Error fetching daily price summary", error);
     throw new Error("Unable to fetch daily price summary");
   }
 }
@@ -117,23 +109,40 @@ export async function getMonthlyPriceSummary(): Promise<MonthlySummaryData[]> {
     const { data } = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching monthly price summary", error);
+    logger.error("Error fetching monthly price summary", error);
     throw new Error("Unable to fetch monthly price summary");
   }
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+  
+  // Validate query parameters
+  const validateSearch = createApiValidator(searchSchema);
+  const validatePagination = createApiValidator(paginationSchema);
+  
+  const searchResult = validateSearch({ query: searchParams.get("product") });
+  const paginationResult = validatePagination({ 
+    page: parseInt(searchParams.get("page") || "1"), 
+    limit: parseInt(searchParams.get("limit") || "10") 
+  });
+  
+  if (!searchResult.success) {
+    return NextResponse.json({ error: "Invalid search parameters", details: searchResult.error }, { status: 400 });
+  }
+  
+  if (!paginationResult.success) {
+    return NextResponse.json({ error: "Invalid pagination parameters", details: paginationResult.error }, { status: 400 });
+  }
+  
   const product = searchParams.get("product");
   const month = searchParams.get("month");
   const type = searchParams.get("type");
-  const limit = searchParams.get("limit");
-
-  console.log("API Request:", { product, month, type, limit });
+  const { limit } = paginationResult.data;
 
   try {
     // Build the query with optional filters
-    let query = supabase
+    let query = supabaseServer
       .from("prices")
       .select("id, product_name, price, date")
       .order("date", { ascending: false });
@@ -157,22 +166,22 @@ export async function GET(request: Request) {
 
     if (fetchError) throw new Error(`Error fetching prices: ${fetchError.message}`);
     if (!pricesData || pricesData.length === 0) {
-      console.log("No price data found");
+      logger.debug("No price data found");
       return NextResponse.json({ data: [] }); // Always return an array, even if empty
     }
 
-    console.log("Raw data from DB:", pricesData.length, "records");
+    logger.debug(`Raw data from DB: ${pricesData.length} records`);
 
     // Handle different response types
     if (type === 'daily') {
-      console.log("Calculating daily summary");
+      logger.debug("Calculating daily summary");
       const dailySummary = calculateDailySummary(pricesData);
-      console.log("Daily summary result:", dailySummary || []);
+      logger.debug("Daily summary result:", dailySummary || []);
       return NextResponse.json({ data: dailySummary || [] }); // Ensure we return an array
     } else if (type === 'monthly') {
-      console.log("Calculating monthly summary");
+      logger.debug("Calculating monthly summary");
       const monthlySummary = calculateMonthlySummary(pricesData);
-      console.log("Monthly summary result:", monthlySummary || []);
+      logger.debug("Monthly summary result:", monthlySummary || []);
       return NextResponse.json({ data: monthlySummary || [] }); // Ensure we return an array
     } else {
       // If type is not specified, just return the price data directly
@@ -180,7 +189,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ data: pricesData });
     }
   } catch (error) {
-    console.error("API error:", error);
+    logger.error("API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to fetch summary data";
     return NextResponse.json({ error: errorMessage, data: [] }, { status: 500 }); // Return empty array on error
   }
@@ -192,58 +201,49 @@ export async function POST(request: Request) {
     const body = await request.json();
     const items = Array.isArray(body) ? body : [body]; // Ensure the body is an array
 
-    console.log("POST Request Body:", items);
-
-    // Validate each item in the array
+    // Validate each item using Zod schema
+    const validatedItems = [];
+    const validatePrice = createApiValidator(priceSchema);
+    
     for (const item of items) {
-      const { productName, price, date } = item;
-
-      if (!productName || price === undefined || !date) {
+      const validation = validatePrice(item);
+      
+      if (!validation.success) {
         return NextResponse.json(
-          { error: "Missing required fields: productName, price, date" },
+          { error: "Validation failed", details: validation.error },
           { status: 400 }
         );
       }
-
-      // Coerce price to a number and validate
-      const numericPrice = typeof price === "string" ? parseFloat(price) : price;
-      if (typeof numericPrice !== "number" || isNaN(numericPrice)) {
-        return NextResponse.json(
-          { error: "Price must be a valid number" },
-          { status: 400 }
-        );
-      }
-
-      // Replace the original price with the coerced numeric price
-      item.price = numericPrice;
+      
+      validatedItems.push(validation.data);
     }
 
-    // Map the items to the format required by the database
-    const formattedItems = items.map(({ productName, price, date }) => ({
+    // Map the validated items to the format required by the database
+    const formattedItems = validatedItems.map(({ productName, price, date }) => ({
       product_name: productName,
       price: price,
-      date: new Date(date).toISOString(),
+      date: date, // Already validated as proper date string
     }));
 
     // Insert the new price records into the database
-    const { data: newPrices, error: insertError } = await supabase
+    const { data: newPrices, error: insertError } = await supabaseServer
       .from("prices")
       .insert(formattedItems)
       .select();
 
     if (insertError) {
-      console.error("Error inserting prices:", insertError);
+      logger.error("Error inserting prices:", insertError);
       return NextResponse.json(
         { error: `Failed to insert prices: ${insertError.message}` },
         { status: 500 }
       );
     }
 
-    console.log("Successfully inserted prices:", newPrices);
+    logger.debug("Successfully inserted prices:", newPrices);
     return NextResponse.json({ data: newPrices }, { status: 201 });
 
   } catch (error) {
-    console.error("POST API error:", error);
+    logger.error("POST API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to add price data";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

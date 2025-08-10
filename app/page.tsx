@@ -17,6 +17,17 @@ import {
 } from '@/components/ui/dialog';
 import PriceForm from '@/components/price-form';
 import { useMediaQuery } from '@/hooks/use-mobile';
+import { 
+  Home, 
+  Plus, 
+  Calendar, 
+  CalendarDays, 
+  Download,
+  Store,
+  Package,
+  TrendingUp,
+  Receipt 
+} from 'lucide-react';
 
 export default function Home() {
   const [refreshData, setRefreshData] = useState(0);
@@ -36,66 +47,77 @@ export default function Home() {
 
   return (
     <>
-      <main className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6 text-center">แดชบอร์ด</h1>
+      <main className="container mx-auto p-4 max-w-6xl">
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Store className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
+            ร้านค้าของคุณ
+          </h1>
+          <p className="text-gray-600 text-lg mt-2">ระบบจัดการร้านค้าแบบง่าย ๆ</p>
+        </div>
 
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs defaultValue="dashboard" className="w-full space-y-6">
           <TabsList
-            className={`flex flex-wrap mb-4 sm:mb-8 ${
-              isMobile ? 'overflow-x-auto' : ''
-            }`}
+            className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 h-auto p-2 bg-gray-100 rounded-xl"
           >
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary"
               value="dashboard"
             >
-              แดชบอร์ด
+              <Home className="h-5 w-5" />
+              <span className="text-sm sm:text-base font-medium">หน้าหลัก</span>
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary"
               value="add-price"
             >
-              เพิ่มสินค้า
+              <Plus className="h-5 w-5" />
+              <span className="text-sm sm:text-base font-medium">เพิ่มสินค้า</span>
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary"
               value="daily"
             >
-              รายวัน
+              <Calendar className="h-5 w-5" />
+              <span className="text-sm sm:text-base font-medium">รายวัน</span>
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary"
               value="monthly"
             >
-              รายเดือน
+              <CalendarDays className="h-5 w-5" />
+              <span className="text-sm sm:text-base font-medium">รายเดือน</span>
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary col-span-2 sm:col-span-1"
               value="export"
             >
-              ส่งออก
+              <Download className="h-5 w-5" />
+              <span className="text-sm sm:text-base font-medium">พิมพ์/ส่งออก</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard">
+          <TabsContent value="dashboard" className="animate-fadeIn space-y-6">
             <Dashboard key={refreshData} />
           </TabsContent>
 
-          <TabsContent value="add-price">
+          <TabsContent value="add-price" className="animate-fadeIn">
             <PriceForm
               onDataChange={() => setRefreshData((prev) => prev + 1)}
             />
           </TabsContent>
 
-          <TabsContent value="daily">
+          <TabsContent value="daily" className="animate-fadeIn">
             <DailySummary key={refreshData} />
           </TabsContent>
 
-          <TabsContent value="monthly">
+          <TabsContent value="monthly" className="animate-fadeIn">
             <MonthlySummary key={refreshData} />
           </TabsContent>
 
-          <TabsContent value="export">
+          <TabsContent value="export" className="animate-fadeIn">
             <ExportOptions />
           </TabsContent>
         </Tabs>

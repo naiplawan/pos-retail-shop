@@ -3,10 +3,8 @@ const path = require("path")
 const isDev = require("electron-is-dev")
 const { autoUpdater } = require("electron-updater")
 
-// Environment variables
-process.env.SUPABASE_URL = "https://gotbldxyecgshpavgkzn.supabase.co"
-process.env.SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvdGJsZHh5ZWNnc2hwYXZna3puIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ0MjAyNzAsImV4cCI6MjA1OTk5NjI3MH0.mvIuoNHU3WobqoLTfOiv2R9SbsVKm3QyXTEa3Z0uqpg"
+// Environment variables - load from .env files
+require('dotenv').config()
 
 let mainWindow
 
@@ -15,8 +13,10 @@ function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      webSecurity: true,
       preload: path.join(__dirname, "preload.js"),
     },
   })
@@ -55,7 +55,27 @@ app.on("activate", () => {
   }
 })
 
-// Handle IPC messages from renderer
+// Handle IPC messages from renderer with validation
+const ALLOWED_ENV_VARS = ['NODE_ENV', 'APP_VERSION']
+
 ipcMain.handle("get-env", (event, name) => {
+  // Only allow access to specific environment variables
+  if (!ALLOWED_ENV_VARS.includes(name)) {
+    console.warn(`Unauthorized attempt to access environment variable: ${name}`)
+    return null
+  }
   return process.env[name]
 })
+
+// Add memory optimization for production
+if (!isDev) {
+  app.commandLine.appendSwitch('--max-old-space-size', '4096')
+  app.commandLine.appendSwitch('--enable-gpu-rasterization')
+  
+  // Enable garbage collection every 30 seconds
+  setInterval(() => {
+    if (global.gc) {
+      global.gc()
+    }
+  }, 30000)
+}
