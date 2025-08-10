@@ -14,8 +14,9 @@
 ### ✅ **Build Status**
 - **✅ pnpm lint** - Code quality check passed
 - **✅ pnpm build** - Production build successful  
+- **✅ pnpm dev** - Development server working
 - **✅ Bundle Size** - Optimized 927KB first load
-- **✅ TypeScript** - Full type safety implemented
+- **✅ Demo Mode** - Works without database setup
 - **✅ Documentation** - Comprehensive docs available
 
 ### 🔄 **Recent Updates (v2.0.0)**
@@ -166,7 +167,7 @@ pnpm dev
 # เปิด http://localhost:3000 ✨
 ```
 
-**หมายเหตุ**: แอพพลิเคชันจะทำงานได้ทันทีโดยไม่ต้องตั้งค่าฐานข้อมูล (ใช้ mock data)
+**✨ Demo Mode**: แอพพลิเคชันจะทำงานได้ทันทีโดยไม่ต้องตั้งค่าฐานข้อมูล! ระบบจะแสดงข้อมูลตัวอย่างสินค้าไทยอัตโนมัติ
 
 ### รัน Desktop App
 

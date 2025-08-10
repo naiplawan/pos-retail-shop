@@ -15,6 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.2] - 2024-01-15
+
+### 🎯 **Demo Mode & Runtime Fixes**
+
+#### ✨ Added
+- **Demo Mode** - Application works without database configuration
+- **Mock Data System** - Sample Thai retail products for immediate testing
+- **Graceful Fallbacks** - Handles missing environment variables elegantly
+- **Client-Side Supabase** - Separate client for browser operations
+
+#### 🔧 Fixed
+- **Runtime Errors** - Resolved Supabase environment variable crashes
+- **Development Server** - Now starts successfully without database setup
+- **Error Handling** - Proper logging for configuration issues
+- **API Compatibility** - Mock client maintains same interface as real client
+
+#### 🚀 User Experience
+- **Instant Setup** - Run `pnpm dev` without any configuration
+- **Sample Data** - Realistic Thai products displayed immediately
+- **No Crashes** - Application loads even with invalid credentials
+- **Development Ready** - Perfect for testing and development
+
+---
+
 ## [2.0.1] - 2024-01-15
 
 ### 🔧 **Production Ready Build**
