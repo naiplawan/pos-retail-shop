@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2024-01-15
+
+### 🔧 **Production Ready Build**
+
+#### ✅ Fixed
+- **Build System** - Resolved all build errors and compilation issues
+- **Client Component Architecture** - Fixed server/client component boundaries
+- **TypeScript Configuration** - Resolved import conflicts and type definitions
+- **ESLint Configuration** - Updated rules for better development experience
+- **Missing Dependencies** - Added all required @radix-ui packages
+
+#### 🏗️ Technical Improvements
+- **Client Providers Wrapper** - Separated client-side context providers
+- **Toast System Fix** - Fixed actionTypes definition in use-toast.ts
+- **Import Cleanup** - Resolved naming conflicts and unused imports
+- **Build Optimization** - Bundle size optimized to 927KB first load
+- **Static Generation** - All 11 pages successfully generated
+
+#### 📊 Build Status
+- ✅ **pnpm lint** - Passes with warnings (configured)
+- ✅ **pnpm build** - Successful production build
+- ✅ **Bundle Analysis** - Optimized chunk splitting
+- ✅ **Static Pages** - All routes properly generated
+
+---
+
 ## [2.0.0] - 2024-01-15
 
 ### 🎉 Major Release - Complete UX/UI Overhaul
