@@ -28,6 +28,7 @@ import { InventoryManager } from '@/components/inventory-manager';
 import { PrintSystem } from '@/components/print-system';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 // Helper function to safely extract data
 function normalizeApiResponse<T>(response: unknown): T[] {

@@ -85,7 +85,7 @@ export default function RecentPricesTable({
       <TableBody>
         {priceData.filter(isValidPriceItem).map((item) => {
           // Handle different property name conventions (productName vs product_name)
-          const productName = (item as any).productName || item.product_name || '';
+          const productName = item.productName || '';
           // Make sure price is a number
           const price =
             typeof item.price === 'number'

@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { PriceData, DailySummary, MonthlySummary } from '@/types';
+import type { PriceData, DailySummaryData, MonthlySummaryData } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -137,7 +137,7 @@ export function formatPriceData(pricesData: PriceData[], limit: number) {
     .slice(0, limit)
     .map(item => ({
       id: item.id,
-      productName: item.product_name,
+      productName: item.productName,
       price: item.price,
       date: item.date,
     }));

@@ -193,7 +193,7 @@ export function InventoryManager() {
 
   // Filter and sort data
   const filteredData = useMemo(() => {
-    let filtered = inventoryData.filter(item => {
+    const filtered = inventoryData.filter(item => {
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            item.sku.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = !selectedCategory || item.category === selectedCategory;

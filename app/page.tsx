@@ -16,17 +16,13 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import PriceForm from '@/components/price-form';
-import { useMediaQuery } from '@/hooks/use-mobile';
 import { 
-  Home, 
+  Home as HomeIcon, 
   Plus, 
   Calendar, 
   CalendarDays, 
   Download,
-  Store,
-  Package,
-  TrendingUp,
-  Receipt 
+  Store
 } from 'lucide-react';
 
 export default function Home() {
@@ -37,7 +33,6 @@ export default function Home() {
     date: '',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleConfirm = () => {
     toast.success('บันทึกข้อมูลสำเร็จ!');
@@ -66,7 +61,7 @@ export default function Home() {
               className="data-[state=active]:bg-white data-[state=active]:shadow-soft py-4 px-4 rounded-lg transition-all flex flex-col sm:flex-row items-center gap-2 hover:bg-white/50 text-gray-700 data-[state=active]:text-primary"
               value="dashboard"
             >
-              <Home className="h-5 w-5" />
+              <HomeIcon className="h-5 w-5" />
               <span className="text-sm sm:text-base font-medium">หน้าหลัก</span>
             </TabsTrigger>
             <TabsTrigger
