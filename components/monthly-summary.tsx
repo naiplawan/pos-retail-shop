@@ -56,32 +56,35 @@ export default function MonthlySummary() {
           {
             header: 'เดือน',
             accessor: 'month',
-            format: (value: { split: (arg0: string) => [any, any] }) => {
-              const [year, month] = value.split('-');
-              return format(
-                new Date(Number.parseInt(year), Number.parseInt(month) - 1),
-                'MMMM yyyy',
-                { locale: th }
-              );
+            format: (value: unknown): string => {
+              if (typeof value === 'string' && value.includes('-')) {
+                const [year, month] = value.split('-');
+                return format(
+                  new Date(Number.parseInt(year), Number.parseInt(month) - 1),
+                  'MMMM yyyy',
+                  { locale: th }
+                );
+              }
+              return String(value || 'N/A');
             },
           },
           { header: 'จำนวนรายการ', accessor: 'count' },
           {
             header: 'ราคาเฉลี่ย (บาท)',
             accessor: 'averagePrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
           {
             header: 'ราคาต่ำสุด (บาท)',
             accessor: 'minPrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
           {
             header: 'ราคาสูงสุด (บาท)',
             accessor: 'maxPrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
         ],

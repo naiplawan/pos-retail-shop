@@ -63,7 +63,7 @@ export default function RecentPricesTable({
   }
 
   const isValidPriceItem = (item: unknown): item is PriceData => {
-    return (
+    return Boolean(
       item &&
       typeof item === 'object' &&
       'id' in item &&

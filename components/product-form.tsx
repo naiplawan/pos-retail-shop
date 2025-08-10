@@ -63,7 +63,9 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
     const fetchRecentItems = async () => {
       try {
         setIsLoading(true);
-        const allPrices = await getAllPrices();
+        const response = await fetch('/api/prices');
+        const result = await response.json();
+        const allPrices = result.data || [];
         setRecentItems(allPrices.slice(0, 10)); // Just get the 10 most recent items
       } catch (error) {
         console.error('Error fetching recent items:', error);
@@ -88,11 +90,16 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-      const result = await addProductPrice({
-        productName: values.productName,
-        price: values.price,
-        date: values.date,
+      const response = await fetch('/api/prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productName: values.productName,
+          price: values.price,
+          date: values.date,
+        })
       });
+      const result = await response.json();
 
       // Add the new item to the recentItems list
       const newItem: ItemEntry = {
@@ -212,10 +219,14 @@ export default function PriceForm({ onDataChange }: PriceFormProps) {
       const selectedDate = form.getValues('date');
       const results = await Promise.all(
         cartItems.map((item) =>
-          addProductPrice({
-            productName: item.productName,
-            price: item.price,
-            date: selectedDate, // Use the selected date from the form
+          fetch('/api/prices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productName: item.productName,
+              price: item.price,
+              date: selectedDate,
+            })
           })
         )
       );

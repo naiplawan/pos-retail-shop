@@ -151,8 +151,8 @@ export async function GET(request: Request) {
     }
 
     // Apply limit if provided
-    if (limit && !isNaN(parseInt(limit))) {
-      query = query.limit(parseInt(limit));
+    if (limit && !isNaN(limit)) {
+      query = query.limit(limit);
     }
 
     // Execute the query
@@ -169,12 +169,22 @@ export async function GET(request: Request) {
     // Handle different response types
     if (type === 'daily') {
       logger.debug("Calculating daily summary");
-      const dailySummary = calculateDailySummary(pricesData);
+      const dailySummary = calculateDailySummary(pricesData.map(item => ({
+        id: item.id?.toString() || '',
+        productName: item.product_name || '',
+        price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0,
+        date: item.date || new Date().toISOString()
+      })));
       logger.debug("Daily summary result:", dailySummary || []);
       return NextResponse.json({ data: dailySummary || [] }); // Ensure we return an array
     } else if (type === 'monthly') {
       logger.debug("Calculating monthly summary");
-      const monthlySummary = calculateMonthlySummary(pricesData);
+      const monthlySummary = calculateMonthlySummary(pricesData.map(item => ({
+        id: item.id?.toString() || '',
+        productName: item.product_name || '',
+        price: typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0,
+        date: item.date || new Date().toISOString()
+      })));
       logger.debug("Monthly summary result:", monthlySummary || []);
       return NextResponse.json({ data: monthlySummary || [] }); // Ensure we return an array
     } else {

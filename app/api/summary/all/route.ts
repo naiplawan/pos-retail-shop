@@ -11,7 +11,7 @@ import { logger } from "@/lib/logger";
 export async function calculateAllSummary(pricesData: any[]): Promise<AllSummaryData[]> {
   // Ensure pricesData is an array
   if (!Array.isArray(pricesData)) {
-    logger.error("calculateAllSummary expected an array but received:", typeof pricesData, JSON.stringify(pricesData, null, 2));
+    logger.error("calculateAllSummary expected an array but received: " + typeof pricesData + ", data: " + JSON.stringify(pricesData, null, 2));
     // If pricesData is an object with a data property that's an array, use that instead
     if (pricesData && typeof pricesData === 'object' && 'data' in (pricesData as { data?: any[] }) && Array.isArray((pricesData as { data?: any[] }).data)) {
       pricesData = (pricesData as { data: PriceData[] }).data;
@@ -22,7 +22,7 @@ export async function calculateAllSummary(pricesData: any[]): Promise<AllSummary
     }
   }
 
-  logger.debug("Processing array of length:", pricesData.length, "First item:", pricesData[0]);
+  logger.debug("Processing array of length: " + pricesData.length + ", First item: " + JSON.stringify(pricesData[0]));
 
   // Group prices by product name and month
   const summaryByProductAndMonth: Record<string, AllSummaryData> = {};

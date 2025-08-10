@@ -53,26 +53,30 @@ export default function DailySummary() {
           {
             header: 'วันที่',
             accessor: 'date',
-            format: (value: string | number | Date) =>
-              format(new Date(value), 'PPP', { locale: th }),
+            format: (value: unknown): string => {
+              if (value && (typeof value === 'string' || typeof value === 'number' || value instanceof Date)) {
+                return format(new Date(value), 'PPP', { locale: th });
+              }
+              return 'N/A';
+            },
           },
           { header: 'จำนวนรายการ', accessor: 'count' },
           {
             header: 'ราคาเฉลี่ย (บาท)',
             accessor: 'averagePrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
           {
             header: 'ราคาต่ำสุด (บาท)',
             accessor: 'minPrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
           {
             header: 'ราคาสูงสุด (บาท)',
             accessor: 'maxPrice',
-            format: (value: number) =>
+            format: (value: unknown): string =>
               typeof value === 'number' ? value.toFixed(2) : '0.00',
           },
         ],

@@ -15,11 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, FileText, Download } from 'lucide-react';
 import { exportToGoogleSheets, exportToPdf } from '@/lib/export';
-import {
-  getDailyPriceSummary,
-  getMonthlyPriceSummary,
-  getAllPrices,
-} from '@/app/api/prices/route';
+// Remove direct server function imports - use API calls instead
 
 // Update the `getExportData` function to handle empty data gracefully
 const getExportData = async (type: string) => {
@@ -28,74 +24,97 @@ const getExportData = async (type: string) => {
   let columns;
 
   if (type === 'daily') {
-    data = await getDailyPriceSummary();
+    const response = await fetch('/api/prices?type=daily');
+    if (!response.ok) {
+      throw new Error('Failed to fetch daily summary');
+    }
+    const result = await response.json();
+    data = result.data || [];
     title = 'สรุปราคาสินค้ารายวัน';
     columns = [
       {
         header: 'วันที่',
         accessor: 'date',
-        format: (value: string | number | Date): string =>
-          value ? format(new Date(value), 'PPP', { locale: th }) : 'N/A',
+        format: (value: unknown): string => {
+          if (value && (typeof value === 'string' || typeof value === 'number' || value instanceof Date)) {
+            return format(new Date(value), 'PPP', { locale: th });
+          }
+          return 'N/A';
+        },
       },
       { header: 'จำนวนรายการ', accessor: 'count' },
       {
         header: 'ราคาเฉลี่ย (บาท)',
         accessor: 'averagePrice',
-        format: (value: number): string =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
       {
         header: 'ราคาต่ำสุด (บาท)',
         accessor: 'minPrice',
-        format: (value: number): string =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
       {
         header: 'ราคาสูงสุด (บาท)',
         accessor: 'maxPrice',
-        format: (value: number): string =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
     ];
   } else if (type === 'monthly') {
-    data = await getMonthlyPriceSummary();
+    const response = await fetch('/api/prices?type=monthly');
+    if (!response.ok) {
+      throw new Error('Failed to fetch monthly summary');
+    }
+    const result = await response.json();
+    data = result.data || [];
     title = 'สรุปราคาสินค้ารายเดือน';
     columns = [
       {
         header: 'เดือน',
         accessor: 'month',
-        format: (value: any) =>
-          value ? format(new Date(value), 'MMMM yyyy', { locale: th }) : 'N/A',
+        format: (value: unknown): string => {
+          if (value && (typeof value === 'string' || typeof value === 'number' || value instanceof Date)) {
+            return format(new Date(value), 'MMMM yyyy', { locale: th });
+          }
+          return 'N/A';
+        },
       },
       { header: 'จำนวนรายการ', accessor: 'count' },
       {
         header: 'ราคาเฉลี่ย (บาท)',
         accessor: 'averagePrice',
-        format: (value: any) =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
       {
         header: 'ราคาต่ำสุด (บาท)',
         accessor: 'minPrice',
-        format: (value: any) =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
       {
         header: 'ราคาสูงสุด (บาท)',
         accessor: 'maxPrice',
-        format: (value: any) =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
     ];
   } else {
-    data = await getAllPrices();
+    const response = await fetch('/api/prices');
+    if (!response.ok) {
+      throw new Error('Failed to fetch all prices');
+    }
+    const result = await response.json();
+    data = result.data || [];
     title = 'รายการราคาสินค้าทั้งหมด';
     columns = [
       { header: 'ชื่อสินค้า', accessor: 'productName' },
       {
         header: 'ราคา (บาท)',
         accessor: 'price',
-        format: (value: any) =>
+        format: (value: unknown): string =>
           typeof value === 'number' ? value.toFixed(2) : '0.00',
       },
       { header: 'วันที่', accessor: 'date' },

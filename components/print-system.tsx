@@ -306,7 +306,13 @@ export function PrintSystem({ onClose }: { onClose: () => void }) {
             `).join('')}
           </div>
           <div class="text-center font-bold">
-            รวมทั้งสิ้น: ${data.summary?.totalValue || 0} บาท
+            รวมทั้งสิ้น: ${(() => {
+              const summary = data.summary;
+              if (!summary) return 0;
+              if ('totalValue' in summary) return summary.totalValue;
+              if ('totalRevenue' in summary) return summary.totalRevenue;
+              return 0;
+            })()} บาท
           </div>
           <div class="text-center" style="margin-top: 15px;">
             <div>ขอบคุณที่ใช้บริการ</div>

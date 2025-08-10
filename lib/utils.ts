@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
  * @param pricesData Array of price data
  * @returns Array of daily summaries sorted by date (newest first)
  */
-export function calculateDailySummary(pricesData: PriceData[]): DailySummary[] {
+export function calculateDailySummary(pricesData: PriceData[]): DailySummaryData[] {
   if (!pricesData.length) return [];
 
   // Use Map for better performance with string keys
@@ -49,12 +49,11 @@ export function calculateDailySummary(pricesData: PriceData[]): DailySummary[] {
   }
 
   // Convert to array and calculate averages in one pass
-  const results: DailySummary[] = [];
+  const results: DailySummaryData[] = [];
   
   for (const summary of summaryMap.values()) {
     results.push({
       date: summary.date,
-      total: summary.total,
       count: summary.count,
       averagePrice: summary.total / summary.count,
       minPrice: summary.minPrice,
@@ -71,7 +70,7 @@ export function calculateDailySummary(pricesData: PriceData[]): DailySummary[] {
  * @param pricesData Array of price data
  * @returns Array of monthly summaries sorted by month (newest first)
  */
-export function calculateMonthlySummary(pricesData: PriceData[]): MonthlySummary[] {
+export function calculateMonthlySummary(pricesData: PriceData[]): MonthlySummaryData[] {
   if (!pricesData.length) return [];
 
   // Use Map for better performance
@@ -109,12 +108,11 @@ export function calculateMonthlySummary(pricesData: PriceData[]): MonthlySummary
   }
 
   // Convert to array and calculate averages in one pass
-  const results: MonthlySummary[] = [];
+  const results: MonthlySummaryData[] = [];
   
   for (const summary of summaryMap.values()) {
     results.push({
       month: summary.month,
-      total: summary.total,
       count: summary.count,
       averagePrice: summary.total / summary.count,
       minPrice: summary.minPrice,

@@ -44,7 +44,7 @@ export default function PriceChart({ data }: PriceChartProps) {
     averagePrice: Number(item?.averagePrice || 0),
     count: Number(item?.count || 0),
     totalSales:
-      Number(item?.totalSales || item?.total || 0) ||
+      Number(item?.totalSales || 0) ||
       Number(item?.averagePrice || 0) * Number(item?.count || 0),
   }));
 
@@ -102,8 +102,8 @@ export default function PriceChart({ data }: PriceChartProps) {
       },
       tooltip: {
         callbacks: {
-          label: (context: { raw: number }) => {
-            const value = context.raw;
+          label: (context: any) => {
+            const value = typeof context.raw === 'number' ? context.raw : 0;
             return `${value.toLocaleString()} บาท`;
           },
         },
