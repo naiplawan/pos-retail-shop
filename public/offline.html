@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบออฟไลน์ - POS Retail Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wifi-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .features {
+            text-align: left;
+            margin: 30px 0;
+        }
+        
+        .features h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .features li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: bold;
+        }
+        
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .retry-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .connection-status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+        }
+        
+        .status-online {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+        }
+        
+        .cached-data {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .features {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="wifi-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8s8 3.58 8 8-3.58 8-8 8-8-3.58-8-8z"/>
+                <path d="M8.5 12.5l3.5-3.5 3.5 3.5-1.4 1.4-2.1-2.1-2.1 2.1z"/>
+            </svg>
+        </div>
+        
+        <h1>ระบบทำงานออฟไลน์</h1>
+        <p class="subtitle">ไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้ แต่คุณยังสามารถใช้งานได้</p>
+        
+        <div class="status">
+            <strong>สถานะ:</strong> โหมดออฟไลน์ - ข้อมูลจะถูกซิงค์เมื่อกลับมาออนไลน์
+        </div>
+        
+        <div class="features">
+            <h3>ฟีเจอร์ที่ใช้งานได้ในโหมดออฟไลน์:</h3>
+            <ul>
+                <li>ดูข้อมูลสินค้าที่เคยโหลดไว้</li>
+                <li>เพิ่มข้อมูลสินค้าใหม่ (จะซิงค์เมื่อออนไลน์)</li>
+                <li>ดูประวัติการขายที่เก็บไว้</li>
+                <li>พิมพ์ใบเสร็จและรายงาน</li>
+                <li>ใช้เครื่องคิดเลขและเครื่องมือพื้นฐาน</li>
+            </ul>
+        </div>
+        
+        <div class="connection-status" id="connectionStatus">
+            <span class="status-offline">🔴 ออฟไลน์</span>
+        </div>
+        
+        <div class="cached-data" id="cachedData">
+            <h4 style="margin-bottom: 10px;">ข้อมูลที่เก็บไว้:</h4>
+            <div class="data-item">
+                <span>สินค้าในแคช:</span>
+                <span id="cachedItems">กำลังโหลด...</span>
+            </div>
+            <div class="data-item">
+                <span>ข้อมูลที่รอซิงค์:</span>
+                <span id="pendingSync">0 รายการ</span>
+            </div>
+            <div class="data-item">
+                <span>อัปเดตล่าสุด:</span>
+                <span id="lastUpdate">ไม่ทราบ</span>
+            </div>
+        </div>
+        
+        <button class="retry-btn" onclick="checkConnection()">
+            ตรวจสอบการเชื่อมต่อ
+        </button>
+        
+        <button class="retry-btn" onclick="goOnline()">
+            ลองเชื่อมต่อใหม่
+        </button>
+    </div>
+
+    <script>
+        // Check online status
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            if (navigator.onLine) {
+                statusEl.innerHTML = '<span class="status-online">🟢 ออนไลน์</span>';
+                // Auto redirect when back online
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusEl.innerHTML = '<span class="status-offline">🔴 ออฟไลน์</span>';
+            }
+        }
+
+        // Load cached data info
+        async function loadCachedInfo() {
+            try {
+                // Check service worker cache
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    let totalCached = 0;
+                    
+                    for (const cacheName of cacheNames) {
+                        const cache = await caches.open(cacheName);
+                        const keys = await cache.keys();
+                        totalCached += keys.length;
+                    }
+                    
+                    document.getElementById('cachedItems').textContent = `${totalCached} รายการ`;
+                }
+
+                // Check IndexedDB for pending sync
+                if ('indexedDB' in window) {
+                    const request = indexedDB.open('pos-offline-store', 1);
+                    request.onsuccess = (event) => {
+                        const db = event.target.result;
+                        if (db.objectStoreNames.contains('offline_operations')) {
+                            const tx = db.transaction(['offline_operations'], 'readonly');
+                            const store = tx.objectStore('offline_operations');
+                            const countRequest = store.count();
+                            
+                            countRequest.onsuccess = () => {
+                                document.getElementById('pendingSync').textContent = 
+                                    `${countRequest.result} รายการ`;
+                            };
+                        }
+                    };
+                }
+
+                // Last update time
+                const lastUpdate = localStorage.getItem('lastUpdate');
+                if (lastUpdate) {
+                    const date = new Date(lastUpdate);
+                    document.getElementById('lastUpdate').textContent = 
+                        date.toLocaleString('th-TH');
+                } else {
+                    document.getElementById('lastUpdate').textContent = 'ไม่ทราบ';
+                }
+            } catch (error) {
+                console.error('Error loading cached info:', error);
+            }
+        }
+
+        function checkConnection() {
+            updateConnectionStatus();
+            if (navigator.onLine) {
+                window.location.href = '/';
+            } else {
+                alert('ยังไม่สามารถเชื่อมต่อได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+            }
+        }
+
+        function goOnline() {
+            window.location.href = '/';
+        }
+
+        // Event listeners
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial load
+        updateConnectionStatus();
+        loadCachedInfo();
+
+        // Refresh cached info every 30 seconds
+        setInterval(loadCachedInfo, 30000);
+
+        // Auto-check connection every 10 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                // Try to fetch a small resource to verify connectivity
+                fetch('/', { method: 'HEAD', cache: 'no-cache' })
+                    .then(() => {
+                        window.location.href = '/';
+                    })
+                    .catch(() => {
+                        // Still offline
+                    });
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

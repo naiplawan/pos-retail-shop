@@ -1,36 +1,53 @@
-export type PriceData = {
-  id: string | number
-  productName: string
-  price: number
-  date: string
+// Core data types with strict typing
+export interface PriceData {
+  readonly id: string | number;
+  productName: string;
+  price: number;
+  date: string;
+  quantity?: number;
+  category?: string;
+  barcode?: string;
+  supplier?: string;
+  cost?: number;
+  profit?: number;
+  notes?: string;
 }
 
-export type DailySummaryData = {
-  date: string
-  count: number
-  averagePrice: number
-  minPrice: number
-  maxPrice: number
+export interface DailySummaryData {
+  readonly date: string;
+  count: number;
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  totalItems: number;
+  totalRevenue?: number;
+  topProduct?: string;
 }
 
-export type MonthlySummaryData = {
-  month: string
-  count: number
-  averagePrice: number
-  minPrice: number
-  maxPrice: number
+export interface MonthlySummaryData {
+  readonly month: string;
+  count: number;
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  totalRevenue: number;
+  totalItems: number;
+  growthRate?: number;
+  previousMonth?: number;
 }
 
-export type AllSummaryData = {
-  month: string
-  productName: string
-  price: number
-  date: string
-  count: number
-  averagePrice: number
-  minPrice: number
-  maxPrice: number
-  totalSales: number
+export interface AllSummaryData {
+  readonly month: string;
+  productName: string;
+  price: number;
+  date: string;
+  count: number;
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  totalSales: number;
+  category?: string;
+  trend?: 'up' | 'down' | 'stable';
 }
 
 export type ExportColumn<T = Record<string, unknown>> = {
@@ -68,28 +85,48 @@ export interface ChecklistSheet {
   updated_at: string;
 }
 
-// API Response types
-export type ApiResponse<T> = {
-  success: true;
-  data: T;
-} | {
-  success: false;
-  error: string;
-  data?: never;
+// API Response types with discriminated unions
+export type ApiResponse<T> = 
+  | {
+      readonly success: true;
+      data: T;
+      message?: string;
+      error?: never;
+    }
+  | {
+      readonly success: false;
+      error: string;
+      code?: string;
+      data?: never;
+      message?: never;
+    };
+
+export interface ApiError {
+  readonly message: string;
+  readonly code?: string;
+  readonly details?: Readonly<Record<string, unknown>>;
+  readonly timestamp?: string;
+  readonly path?: string;
 }
 
-export type ApiError = {
-  message: string;
-  code?: string;
-  details?: Record<string, unknown>;
-}
-
-// Error handling types
+// Enhanced error handling types
 export interface AppError extends Error {
-  code?: string;
-  statusCode?: number;
-  details?: Record<string, unknown>;
+  readonly code?: string;
+  readonly statusCode?: number;
+  readonly details?: Readonly<Record<string, unknown>>;
+  readonly timestamp?: Date;
+  readonly context?: string;
+  readonly recoverable?: boolean;
 }
+
+// Type guards for API responses
+export const isApiSuccess = <T>(response: ApiResponse<T>): response is Extract<ApiResponse<T>, { success: true }> => {
+  return response.success === true;
+};
+
+export const isApiError = <T>(response: ApiResponse<T>): response is Extract<ApiResponse<T>, { success: false }> => {
+  return response.success === false;
+};
 
 // Form data types
 export interface PriceFormData {
