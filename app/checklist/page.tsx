@@ -4,6 +4,8 @@ import {
 } from '@/app/api/checklist/route';
 import ChecklistDetail from './checklist-detail';
 
+export const dynamic = 'force-dynamic';
+
 interface SearchParams {
   sheetId?: string;
 }
