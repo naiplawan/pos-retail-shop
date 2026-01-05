@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import PriceForm from '@/components/price-form';
 import { useMediaQuery } from '@/hooks/use-mobile';
 
@@ -36,41 +37,43 @@ export default function Home() {
 
   return (
     <>
-      <main className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6 text-center">แดชบอร์ด</h1>
+      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-6 text-center tracking-tight">
+          แดชบอร์ด
+        </h1>
 
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList
-            className={`flex flex-wrap mb-4 sm:mb-8 ${
+            className={`flex flex-wrap mb-6 sm:mb-8 ${
               isMobile ? 'overflow-x-auto' : ''
             }`}
           >
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="text-xs sm:text-sm py-2 flex-1"
               value="dashboard"
             >
               แดชบอร์ด
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="text-xs sm:text-sm py-2 flex-1"
               value="add-price"
             >
               เพิ่มสินค้า
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="text-xs sm:text-sm py-2 flex-1"
               value="daily"
             >
               รายวัน
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="text-xs sm:text-sm py-2 flex-1"
               value="monthly"
             >
               รายเดือน
             </TabsTrigger>
             <TabsTrigger
-              className="text-xs sm:text-sm py-1.5 flex-1"
+              className="text-xs sm:text-sm py-2 flex-1"
               value="export"
             >
               ส่งออก
@@ -102,34 +105,36 @@ export default function Home() {
       </main>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>ยืนยันข้อมูล</DialogTitle>
+            <DialogTitle className="text-lg">ยืนยันข้อมูล</DialogTitle>
           </DialogHeader>
-          <div className="mb-4">
-            <p>
-              <strong>ชื่อสินค้า:</strong> {formData.productName}
-            </p>
-            <p>
-              <strong>ราคา:</strong> {formData.price}
-            </p>
-            <p>
-              <strong>วันที่:</strong> {formData.date}
-            </p>
+          <div className="space-y-3 py-2">
+            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+              <span className="text-sm text-muted-foreground">ชื่อสินค้า</span>
+              <span className="text-sm font-medium">{formData.productName}</span>
+            </div>
+            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+              <span className="text-sm text-muted-foreground">ราคา</span>
+              <span className="text-sm font-medium">{formData.price}</span>
+            </div>
+            <div className="flex justify-between items-center py-1.5">
+              <span className="text-sm text-muted-foreground">วันที่</span>
+              <span className="text-sm font-medium">{formData.date}</span>
+            </div>
           </div>
-          <DialogFooter>
-            <button
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
               onClick={() => setIsModalOpen(false)}
-              className="bg-gray-500 text-white text-xl font-bold py-2 px-6 rounded mr-4"
             >
               ยกเลิก
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleConfirm}
-              className="bg-green-500 text-white text-xl font-bold py-2 px-6 rounded"
             >
               ยืนยัน
-            </button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

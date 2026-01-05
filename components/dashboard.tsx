@@ -102,67 +102,69 @@ export default function Dashboard() {
   return (
     <div className="grid gap-4 sm:gap-6 px-2 sm:px-0 pb-16 md:pb-0">
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Total items card */}
-        <Card className="shadow-sm hover:shadow transition-shadow">
-          <CardHeader className="pb-2 px-4 sm:px-6">
-            <CardTitle className="text-lg sm:text-xl">
+        <Card className="group">
+          <CardHeader className="pb-3 px-5">
+            <CardTitle className="text-base sm:text-lg">
               จำนวนรายการทั้งหมด
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               จำนวนรายการราคาที่บันทึกไว้
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 sm:px-6 py-2 sm:py-4">
-            <div className="text-2xl sm:text-3xl font-bold text-center">
+          <CardContent className="px-5 pb-4">
+            <div className="text-3xl sm:text-4xl font-semibold tracking-tight">
               {recentPrices.length}
             </div>
           </CardContent>
         </Card>
 
         {/* Daily average card */}
-        <Card className="shadow-sm hover:shadow transition-shadow">
-          <CardHeader className="pb-2 px-4 sm:px-6">
-            <CardTitle className="text-lg sm:text-xl">
+        <Card className="group">
+          <CardHeader className="pb-3 px-5">
+            <CardTitle className="text-base sm:text-lg">
               ราคาเฉลี่ยวันนี้
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               ราคาเฉลี่ยของสินค้าทั้งหมดวันนี้
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 sm:px-6 py-2 sm:py-4">
-            <div className="text-2xl sm:text-3xl font-bold text-center">
+          <CardContent className="px-5 pb-4">
+            <div className="text-3xl sm:text-4xl font-semibold tracking-tight">
               {dailySummary.length > 0
-                ? `${dailySummary[0].averagePrice.toFixed(2)} บาท`
+                ? `${dailySummary[0].averagePrice.toFixed(2)}`
                 : 'ไม่มีข้อมูล'}
+              <span className="text-base text-muted-foreground ml-1">บาท</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Monthly average card */}
-        <Card className="shadow-sm hover:shadow transition-shadow sm:col-span-2 lg:col-span-1">
-          <CardHeader className="pb-2 px-4 sm:px-6">
-            <CardTitle className="text-lg sm:text-xl">
+        <Card className="group sm:col-span-2 lg:col-span-1">
+          <CardHeader className="pb-3 px-5">
+            <CardTitle className="text-base sm:text-lg">
               ราคาเฉลี่ยเดือนนี้
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               ราคาเฉลี่ยของสินค้าทั้งหมดเดือนนี้
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-4 sm:px-6 py-2 sm:py-4">
-            <div className="text-2xl sm:text-3xl font-bold text-center">
+          <CardContent className="px-5 pb-4">
+            <div className="text-3xl sm:text-4xl font-semibold tracking-tight">
               {monthlySummary.length > 0
-                ? `${monthlySummary[0].averagePrice.toFixed(2)} บาท`
+                ? `${monthlySummary[0].averagePrice.toFixed(2)}`
                 : 'ไม่มีข้อมูล'}
+              <span className="text-base text-muted-foreground ml-1">บาท</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Recent items table */}
-      <Card className="shadow-sm hover:shadow transition-shadow overflow-hidden">
-        <CardHeader className="px-4 sm:px-6 py-4">
-          <CardTitle className="text-lg sm:text-xl">รายการล่าสุด</CardTitle>
+      <Card className="overflow-hidden">
+        <CardHeader className="px-5 py-4">
+          <CardTitle className="text-base sm:text-lg">รายการล่าสุด</CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             รายการราคาสินค้าที่บันทึกล่าสุด
           </CardDescription>
@@ -175,14 +177,14 @@ export default function Dashboard() {
       </Card>
 
       {/* Price chart */}
-      <Card className="shadow-sm hover:shadow transition-shadow">
-        <CardHeader className="px-4 sm:px-6 py-4">
-          <CardTitle className="text-lg sm:text-xl">กราฟราคา</CardTitle>
+      <Card>
+        <CardHeader className="px-5 py-4">
+          <CardTitle className="text-base sm:text-lg">กราฟราคา</CardTitle>
           <CardDescription className="text-xs sm:text-sm">
             กราฟแสดงราคาสินค้าตลอดระยะเวลาที่บันทึก
           </CardDescription>
         </CardHeader>
-        <CardContent className="h-[250px] sm:h-[400px] md:h-[500px] lg:h-[600px] p-0 sm:p-2">
+        <CardContent className="h-[250px] sm:h-[400px] md:h-[500px] lg:h-[600px] p-2">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground text-sm">
